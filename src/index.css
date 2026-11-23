@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root,
+  [data-theme='dark'] {
+    --bg-main: #080C14;
+    --bg-card: #0D1322;
+    --bg-card-subtle: #121A2D;
+    --bg-input: #0F172A;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(34, 211, 238, 0.4);
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3B8;
+    --text-accent: #22D3EE;
+    --grid-dot-color: rgba(255, 255, 255, 0.04);
+  }
+
+  [data-theme='light'] {
+    --bg-main: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-card-subtle: #F1F5F9;
+    --bg-input: #FFFFFF;
+    --border-color: #E2E8F0;
+    --border-hover: rgba(2, 132, 199, 0.4);
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-accent: #0284C7;
+    --grid-dot-color: rgba(15, 23, 42, 0.04);
+  }
+
+  [data-theme='midnight'] {
+    --bg-main: #090514;
+    --bg-card: #130B24;
+    --bg-card-subtle: #1C1033;
+    --bg-input: #170C2E;
+    --border-color: rgba(168, 85, 247, 0.25);
+    --border-hover: rgba(217, 70, 239, 0.5);
+    --text-primary: #FFFFFF;
+    --text-secondary: #C084FC;
+    --text-accent: #E879F9;
+    --grid-dot-color: rgba(168, 85, 247, 0.06);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  
+  code, kbd, samp, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Theme Adaptive Classes */
+.theme-bg {
+  background-color: var(--bg-main);
+}
+
+.theme-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.theme-card:hover {
+  border-color: var(--border-hover);
+}
+
+.theme-card-subtle {
+  background-color: var(--bg-card-subtle);
+  border-color: var(--border-color);
+}
+
+.theme-input {
+  background-color: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.theme-input:focus {
+  border-color: var(--text-accent);
+}
+
+.theme-text-primary {
+  color: var(--text-primary);
+}
+
+.theme-text-muted {
+  color: var(--text-secondary);
+}
+
+.theme-text-accent {
+  color: var(--text-accent);
+}
+
+/* Cyber-grid background */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, var(--grid-dot-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-dot-color) 1px, transparent 1px);
+}
+
+/* Custom focus ring */
+*:focus-visible {
+  @apply outline-none ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-950;
+}
+
+/* ---------------------------------------------------- */
+/* LIGHT THEME (CAMPUS PRO) OVERRIDES                   */
+/* ---------------------------------------------------- */
+[data-theme='light'] .bg-\[\#080C14\],
+[data-theme='light'] .bg-\[\#0D1322\],
+[data-theme='light'] .bg-\[\#0B1220\],
+[data-theme='light'] .bg-\[\#121A2D\],
+[data-theme='light'] .bg-\[\#0F172A\],
+[data-theme='light'] .bg-\[\#0B1528\],
+[data-theme='light'] .bg-\[\#0A1716\],
+[data-theme='light'] .bg-\[\#17140B\],
+[data-theme='light'] .bg-\[\#160D18\],
+[data-theme='light'] .bg-\[\#0B0F19\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05) !important;
+}
+
+[data-theme='light'] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme='light'] .text-slate-300,
+[data-theme='light'] .text-slate-400 {
+  color: #475569 !important;
+}
+
+[data-theme='light'] .bg-slate-900\/90,
+[data-theme='light'] .bg-slate-900,
+[data-theme='light'] .bg-slate-950,
+[data-theme='light'] .bg-slate-800 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme='light'] .border-white\/10,
+[data-theme='light'] .border-white\/15,
+[data-theme='light'] .border-white\/5 {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme='light'] header {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme='light'] header .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme='light'] footer {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+/* ---------------------------------------------------- */
+/* MIDNIGHT VIOLET THEME OVERRIDES                      */
+/* ---------------------------------------------------- */
+[data-theme='midnight'] .bg-\[\#080C14\],
+[data-theme='midnight'] .bg-\[\#0D1322\],
+[data-theme='midnight'] .bg-\[\#0B1220\],
+[data-theme='midnight'] .bg-\[\#121A2D\],
+[data-theme='midnight'] .bg-\[\#0F172A\],
+[data-theme='midnight'] .bg-\[\#0B0F19\] {
+  background-color: #140C2C !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+  color: #ffffff !important;
+}
+
+[data-theme='midnight'] .bg-slate-900\/90,
+[data-theme='midnight'] .bg-slate-900,
+[data-theme='midnight'] .bg-slate-950,
+[data-theme='midnight'] .bg-slate-800 {
+  background-color: #1C103B !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+  color: #f3e8ff !important;
+}
+
+[data-theme='midnight'] header {
+  background-color: rgba(10, 6, 24, 0.92) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+}
+
+[data-theme='midnight'] footer {
+  background-color: rgba(10, 6, 24, 0.92) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+  color: #c084fc !important;
+}
