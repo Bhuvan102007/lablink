@@ -216,11 +216,16 @@ export const ConflictResolverModal: React.FC<ConflictResolverModalProps> = ({
 
             {/* Sister Lab Alternative Recommendation */}
             {resolutionPlan.recommendedResolution.suggestedAlternativeEquipment && (
-              <div className="bg-cyan-950/40 p-3 rounded-xl border border-cyan-800/60 text-xs">
-                <p className="text-cyan-300 font-bold flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                  Cross-Department Alternative Asset Discovered:
-                </p>
+              <div className="bg-cyan-950/40 p-3.5 rounded-xl border border-cyan-800/60 text-xs">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <p className="text-cyan-300 font-bold flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                    Cross-Department Feasible Equipment Alternative:
+                  </p>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">
+                    Peer Lab Alternative
+                  </span>
+                </div>
                 <p className="text-white mt-1 font-semibold">
                   {resolutionPlan.recommendedResolution.suggestedAlternativeEquipment.equipmentName} ({resolutionPlan.recommendedResolution.suggestedAlternativeEquipment.department})
                 </p>

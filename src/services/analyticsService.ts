@@ -9,8 +9,27 @@ export interface LabOptimizationInsight {
   suggestedAction: string;
 }
 
+export interface DepartmentMetric {
+  department: Department;
+  totalAssets: number;
+  averageUtilization: number;
+  crossDeptRequests: number;
+  bottleneckAssets: string[];
+  underutilizedAssets: string[];
+}
+
 export class AnalyticsService {
-  public static computeDepartmentalMetrics(equipment: Equipment[], bookings: BookingRequest[]) {
+  private static metricsCache = new Map<string, DepartmentMetric[]>();
+
+  public static clearCache(): void {
+    this.metricsCache.clear();
+  }
+
+  public static computeDepartmentalMetrics(equipment: Equipment[], bookings: BookingRequest[]): DepartmentMetric[] {
+    const cacheKey = `${equipment.length}:${bookings.length}:${equipment.map(e => e.utilizationRate).join(',')}`;
+    if (this.metricsCache.has(cacheKey)) {
+      return this.metricsCache.get(cacheKey)!;
+    }
     const departments: Department[] = [
       'Computer Science & Engineering',
       'Electronics & Communication',
@@ -20,7 +39,7 @@ export class AnalyticsService {
       'Physics & Materials Science'
     ];
 
-    return departments.map((dept) => {
+    const result = departments.map((dept) => {
       const deptEquipment = equipment.filter((e) => e.department === dept);
       const totalAssets = deptEquipment.length;
       const averageUtilization = totalAssets > 0
@@ -50,6 +69,9 @@ export class AnalyticsService {
         underutilizedAssets
       };
     });
+
+    this.metricsCache.set(cacheKey, result);
+    return result;
   }
 
   public static generateOptimizationInsights(equipment: Equipment[], bookings: BookingRequest[]): LabOptimizationInsight[] {

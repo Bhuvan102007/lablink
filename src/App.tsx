@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { GeminiSearchBar } from './components/GeminiSearchBar';
 import { EquipmentCatalog } from './components/EquipmentCatalog';
-import { BookingModal } from './components/BookingModal';
-import { ConflictResolverModal } from './components/ConflictResolverModal';
-import { FacultyApprovalDashboard } from './components/FacultyApprovalDashboard';
-import { UtilizationAnalytics } from './components/UtilizationAnalytics';
-import { DemoScenarioPresets } from './components/DemoScenarioPresets';
-import { ApiKeyModal } from './components/ApiKeyModal';
-import { MultimodalVisionModal } from './components/MultimodalVisionModal';
-import { DigitalAccessPassModal } from './components/DigitalAccessPassModal';
-import { AccreditationReportModal } from './components/AccreditationReportModal';
 import { INITIAL_EQUIPMENT, INITIAL_BOOKINGS } from './data/mockData';
 import { Equipment, BookingRequest, ConflictResolutionPlan } from './types';
 import { GeminiService } from './services/geminiService';
 import { useTheme } from './context/ThemeContext';
-import { CheckCircle2, AlertCircle, Info, Sparkles } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Info, Sparkles, Loader2 } from 'lucide-react';
+
+// High-Performance Code-Splitting: Lazy-load heavy modals and auxiliary tab views
+const BookingModal = lazy(() => import('./components/BookingModal').then(m => ({ default: m.BookingModal })));
+const ConflictResolverModal = lazy(() => import('./components/ConflictResolverModal').then(m => ({ default: m.ConflictResolverModal })));
+const FacultyApprovalDashboard = lazy(() => import('./components/FacultyApprovalDashboard').then(m => ({ default: m.FacultyApprovalDashboard })));
+const UtilizationAnalytics = lazy(() => import('./components/UtilizationAnalytics').then(m => ({ default: m.UtilizationAnalytics })));
+const DemoScenarioPresets = lazy(() => import('./components/DemoScenarioPresets').then(m => ({ default: m.DemoScenarioPresets })));
+const ApiKeyModal = lazy(() => import('./components/ApiKeyModal').then(m => ({ default: m.ApiKeyModal })));
+const MultimodalVisionModal = lazy(() => import('./components/MultimodalVisionModal').then(m => ({ default: m.MultimodalVisionModal })));
+const DigitalAccessPassModal = lazy(() => import('./components/DigitalAccessPassModal').then(m => ({ default: m.DigitalAccessPassModal })));
+const AccreditationReportModal = lazy(() => import('./components/AccreditationReportModal').then(m => ({ default: m.AccreditationReportModal })));
+
+const ComponentLoader: React.FC = () => (
+  <div className="flex items-center justify-center p-12 text-cyan-400 gap-2">
+    <Loader2 className="w-5 h-5 animate-spin" />
+    <span className="text-xs font-semibold text-slate-400">Loading module...</span>
+  </div>
+);
 
 export const App: React.FC = () => {
   const { theme } = useTheme();
@@ -46,7 +55,7 @@ export const App: React.FC = () => {
   };
 
   // Handle new booking submission
-  const handleNewBooking = (newBooking: BookingRequest) => {
+  const handleNewBooking = useCallback((newBooking: BookingRequest) => {
     setBookings((prev) => [newBooking, ...prev]);
 
     if (newBooking.hasConflict) {
@@ -62,26 +71,26 @@ export const App: React.FC = () => {
         'success'
       );
     }
-  };
+  }, []);
 
   // Handle Faculty approval
-  const handleApproveBooking = (bookingId: string) => {
+  const handleApproveBooking = useCallback((bookingId: string) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, status: 'approved' as const, hasConflict: false, accessPassCode: `PASS-${Math.floor(1000 + Math.random() * 9000)}` } : b))
     );
     showToast('Request Approved', `Digital Pass generated for booking ${bookingId}.`, 'success');
-  };
+  }, []);
 
   // Handle Faculty rejection
-  const handleRejectBooking = (bookingId: string, feedback?: string) => {
+  const handleRejectBooking = useCallback((bookingId: string, feedback?: string) => {
     setBookings((prev) =>
       prev.map((b) => (b.id === bookingId ? { ...b, status: 'rejected' as const, facultyFeedback: feedback } : b))
     );
     showToast('Request Rejected', feedback || 'Student has been notified to modify parameters.', 'info');
-  };
+  }, []);
 
   // Handle Check-In / Check-Out from Technician Gatekeeper
-  const handleCheckInToggle = (bookingId: string) => {
+  const handleCheckInToggle = useCallback((bookingId: string) => {
     setBookings((prev) =>
       prev.map((b) => {
         if (b.id === bookingId) {
@@ -112,10 +121,10 @@ export const App: React.FC = () => {
     });
 
     showToast('Gatekeeper Scan Logged', `Student presence updated in central lab security registry.`, 'success');
-  };
+  }, []);
 
   // Handle Resolution execution from AI Conflict Arbiter
-  const handleApplyResolution = (plan: ConflictResolutionPlan) => {
+  const handleApplyResolution = useCallback((plan: ConflictResolutionPlan) => {
     const { primaryBookingId, secondaryBookingId, actionForPrimary, actionForSecondary, suggestedAlternativeSlot, suggestedAlternativeEquipment } =
       plan.recommendedResolution;
 
@@ -154,10 +163,10 @@ export const App: React.FC = () => {
       'Primary slot confirmed and secondary reservation reallocated with zero academic disruption.',
       'success'
     );
-  };
+  }, []);
 
   // Preset Scenario Loader for Judges
-  const handleLoadScenario = (scenarioId: string) => {
+  const handleLoadScenario = useCallback((scenarioId: string) => {
     if (scenarioId === 'scenario-conflict') {
       setUserRole('faculty');
       setActiveTab('approvals');
@@ -177,10 +186,10 @@ export const App: React.FC = () => {
     } else if (scenarioId === 'scenario-analytics') {
       setActiveTab('analytics');
     }
-  };
+  }, [bookings, equipmentList]);
 
-  const pendingApprovalsCount = bookings.filter((b) => b.status === 'pending_approval').length;
-  const conflictsCount = bookings.filter((b) => b.status === 'conflict_detected' || b.hasConflict).length;
+  const pendingApprovalsCount = useMemo(() => bookings.filter((b) => b.status === 'pending_approval').length, [bookings]);
+  const conflictsCount = useMemo(() => bookings.filter((b) => b.status === 'conflict_detected' || b.hasConflict).length, [bookings]);
 
   return (
     <div className={`min-h-screen ${theme === 'light' ? 'bg-[#F8FAFC] text-slate-900' : theme === 'midnight' ? 'bg-[#090514] text-purple-100' : 'bg-[#080C14] text-slate-100'} flex flex-col antialiased relative selection:bg-cyan-500 selection:text-black transition-colors duration-200`}>
@@ -288,86 +297,100 @@ export const App: React.FC = () => {
 
         {/* Tab 2: Faculty Approvals & Access Requests */}
         {activeTab === 'approvals' && (
-          <FacultyApprovalDashboard
-            bookings={bookings}
-            equipmentList={equipmentList}
-            onApproveBooking={handleApproveBooking}
-            onRejectBooking={handleRejectBooking}
-            onOpenConflictModal={(b1, b2, eq) => setConflictPair({ bookingA: b1, bookingB: b2, equipment: eq })}
-            onViewAccessPass={(booking, eq) => setSelectedPass({ booking, equipment: eq })}
-          />
+          <Suspense fallback={<ComponentLoader />}>
+            <FacultyApprovalDashboard
+              bookings={bookings}
+              equipmentList={equipmentList}
+              onApproveBooking={handleApproveBooking}
+              onRejectBooking={handleRejectBooking}
+              onOpenConflictModal={(b1, b2, eq) => setConflictPair({ bookingA: b1, bookingB: b2, equipment: eq })}
+              onViewAccessPass={(booking, eq) => setSelectedPass({ booking, equipment: eq })}
+            />
+          </Suspense>
         )}
 
         {/* Tab 3: Campus Analytics & Heatmap */}
         {activeTab === 'analytics' && (
-          <UtilizationAnalytics
-            equipmentList={equipmentList}
-            bookings={bookings}
-            onOpenAccreditationReport={() => setIsAccreditationReportOpen(true)}
-          />
+          <Suspense fallback={<ComponentLoader />}>
+            <UtilizationAnalytics
+              equipmentList={equipmentList}
+              bookings={bookings}
+              onOpenAccreditationReport={() => setIsAccreditationReportOpen(true)}
+            />
+          </Suspense>
         )}
 
         {/* Tab 4: Judge Demo Walkthrough Presets */}
         {activeTab === 'scenarios' && (
-          <DemoScenarioPresets onLoadScenario={handleLoadScenario} />
+          <Suspense fallback={<ComponentLoader />}>
+            <DemoScenarioPresets onLoadScenario={handleLoadScenario} />
+          </Suspense>
         )}
       </main>
 
-      {/* Booking Modal */}
-      {bookingTarget && (
-        <BookingModal
-          equipment={bookingTarget}
-          onClose={() => setBookingTarget(null)}
-          onSubmitBooking={handleNewBooking}
-          existingBookings={bookings}
-          allEquipment={equipmentList}
-        />
-      )}
+      <Suspense fallback={null}>
+        {/* Booking Modal */}
+        {bookingTarget && (
+          <BookingModal
+            equipment={bookingTarget}
+            onClose={() => setBookingTarget(null)}
+            onSubmitBooking={handleNewBooking}
+            existingBookings={bookings}
+            allEquipment={equipmentList}
+          />
+        )}
 
-      {/* Conflict Resolver Modal */}
-      {conflictPair && (
-        <ConflictResolverModal
-          bookingA={conflictPair.bookingA}
-          bookingB={conflictPair.bookingB}
-          equipment={conflictPair.equipment}
-          allEquipment={equipmentList}
-          onClose={() => setConflictPair(null)}
-          onApplyResolution={handleApplyResolution}
-        />
-      )}
+        {/* Conflict Resolver Modal */}
+        {conflictPair && (
+          <ConflictResolverModal
+            bookingA={conflictPair.bookingA}
+            bookingB={conflictPair.bookingB}
+            equipment={conflictPair.equipment}
+            allEquipment={equipmentList}
+            onClose={() => setConflictPair(null)}
+            onApplyResolution={handleApplyResolution}
+          />
+        )}
 
-      {/* Digital Access Pass Modal */}
-      {selectedPass && (
-        <DigitalAccessPassModal
-          booking={selectedPass.booking}
-          equipment={selectedPass.equipment}
-          onClose={() => setSelectedPass(null)}
-          onCheckInToggle={handleCheckInToggle}
-        />
-      )}
+        {/* Digital Access Pass Modal */}
+        {selectedPass && (
+          <DigitalAccessPassModal
+            booking={selectedPass.booking}
+            equipment={selectedPass.equipment}
+            onClose={() => setSelectedPass(null)}
+            onCheckInToggle={handleCheckInToggle}
+          />
+        )}
 
-      {/* Accreditation Report Modal */}
-      <AccreditationReportModal
-        isOpen={isAccreditationReportOpen}
-        onClose={() => setIsAccreditationReportOpen(false)}
-        equipmentList={equipmentList}
-        bookings={bookings}
-      />
+        {/* Accreditation Report Modal */}
+        {isAccreditationReportOpen && (
+          <AccreditationReportModal
+            isOpen={isAccreditationReportOpen}
+            onClose={() => setIsAccreditationReportOpen(false)}
+            equipmentList={equipmentList}
+            bookings={bookings}
+          />
+        )}
 
-      {/* Gemini Multimodal Vision Modal */}
-      <MultimodalVisionModal
-        isOpen={isVisionModalOpen}
-        onClose={() => setIsVisionModalOpen(false)}
-        allEquipment={equipmentList}
-        onSelectAndBook={(eq) => setBookingTarget(eq)}
-      />
+        {/* Gemini Multimodal Vision Modal */}
+        {isVisionModalOpen && (
+          <MultimodalVisionModal
+            isOpen={isVisionModalOpen}
+            onClose={() => setIsVisionModalOpen(false)}
+            allEquipment={equipmentList}
+            onSelectAndBook={(eq) => setBookingTarget(eq)}
+          />
+        )}
 
-      {/* Gemini API Key Modal */}
-      <ApiKeyModal
-        isOpen={isApiKeyModalOpen}
-        onClose={() => setIsApiKeyModalOpen(false)}
-        onSave={(key) => setHasApiKey(!!key)}
-      />
+        {/* Gemini API Key Modal */}
+        {isApiKeyModalOpen && (
+          <ApiKeyModal
+            isOpen={isApiKeyModalOpen}
+            onClose={() => setIsApiKeyModalOpen(false)}
+            onSave={(key) => setHasApiKey(!!key)}
+          />
+        )}
+      </Suspense>
 
       {/* Footer */}
       <footer className="mt-auto border-t border-white/10 bg-[#080C14]/90 backdrop-blur-md py-6 text-center text-xs text-slate-400 relative z-10">
